@@ -273,7 +273,7 @@
                     var param =  {
                         currentPage : this.pagination.currentPage,
                         pageSize: this.pagination.pageSize,
-                        queueString : this.pagination.queryString
+                        queryString : this.pagination.queryString
                     }
                     axios.post("/checkitem/findPage.do", param).then((res) => {
                         // 解析Controller响应的数据

@@ -6,6 +6,8 @@ import cn.junsunny.entity.QueryPageBean;
 import cn.junsunny.pojo.CheckItem;
 import cn.junsunny.service.CheckItemService;
 import com.alibaba.dubbo.config.annotation.Service;
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,8 +29,15 @@ public class CheckItemServiceImpl implements CheckItemService {
         Integer pageSize = queryPageBean.getPageSize();
         String queryString = queryPageBean.getQueryString();
         // 使用Mybatis完成分页助手的插件
+        PageHelper.startPage(currentPage, pageSize);
 
-        return null;
+        // 调用service进行查询操作
+        Page<CheckItem> resPage = checkItemDao.findByCondition(queryString);
+
+        // 设置查询结果的返回值
+        PageResult pageResult = new PageResult(resPage.getTotal(), resPage.getResult());
+
+        return pageResult;
     }
 
 }

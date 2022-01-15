@@ -15,4 +15,11 @@
                 #{remark}
             )
     </insert>
+
+    <select id="findByCondition" parameterType="string" resultType="cn.junsunny.pojo.CheckItem">
+        select * from t_checkitem
+            <if test="value != null and value.length > 0">
+               where code = #{value} or name = #{value}
+            </if>
+    </select>
 </mapper>
