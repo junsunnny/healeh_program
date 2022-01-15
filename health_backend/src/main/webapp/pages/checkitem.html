@@ -27,7 +27,7 @@
                 <div class="box">
                     <div class="filter-container">
                         <el-input placeholder="项目编码/项目名称" v-model="pagination.queryString" style="width: 200px;" class="filter-item"></el-input>
-                        <el-button @click="findPage()" class="dalfBut">查询</el-button>
+                        <el-button @click="_findPage()" class="dalfBut">查询</el-button>
                         <el-button type="primary" class="butT" @click="handleCreate()">新建</el-button>
                     </div>
                     <el-table size="small" current-row-key="id" :data="dataList" stripe highlight-current-row>
@@ -230,7 +230,29 @@
             methods: {
                 //编辑
                 handleEdit() {
-
+                  // 進行表單校驗
+                  this.$refs['dataEditForm'].validate((valid) => {
+                      if (valid){
+                          // 表單校驗通過 可以提交數據
+                          axios.post("/checkitem/edit.do",this.formData).then((res) => {
+                                if (res.data.flag){
+                                    // 提示成功提示框
+                                    this.$message({
+                                        message: res.data.message,
+                                        type: 'success'
+                                    })
+                                }
+                          }).finally(() => {
+                              // 不管成功与否 都需要数据刷新
+                              this.dialogFormVisible4Edit = false;
+                              this.findPage();
+                          })
+                      }else {
+                          // 表單校驗不通過
+                          this.$message.error("表单校验失败！！");
+                          return false;
+                      }
+                  })
                 },
                 //添加
                 handleAdd () {
@@ -249,7 +271,7 @@
                                         // 弹出提示信息
                                         this.$message({
                                             message:res.data.message,
-                                            type: 'success'
+                                            type : 'success',
                                         });
                                     }else {
                                         // 执行失败
@@ -266,6 +288,10 @@
                             return false;
                         }
                     })
+                },
+                _findPage() {
+                    this.pagination.currentPage = 1;
+                    this.findPage();
                 },
                 //分页查询
                 findPage() {
@@ -294,6 +320,17 @@
                 },
                 // 弹出编辑窗口
                 handleUpdate(row) {
+                    // 彈出編輯窗口
+                    this.dialogFormVisible4Edit = true;
+                    // 发送异步请求
+                    axios.get("/checkitem/findCheckItem.do?id=" + row.id).then((res) => {
+                        if (res.data.flag) {
+                            // 進行回顯 基於Vue的數據綁定
+                            this.formData = res.data.data;
+                        }else {
+                            this.$message.error(res.data.message)
+                        }
+                    });
                 },
                 //切换页码
                 handleCurrentChange(currentPage) {
@@ -304,6 +341,22 @@
                 },
                 // 删除
                 handleDelete(row) {
+                        this.$confirm('你确定要删除当前数据吗？','删除提示',{type: "warning"}).then(() => {
+                            // 不取消进行异步请求
+                            axios.get("/checkitem/delCheckItem.do?id=" + row.id).then((res) => {
+                                // 如果删除成功则弹出成功页面
+                                if (res.data.flag) {
+                                    this.$message({
+                                        message: res.data.message,
+                                        type: 'success'
+                                    })
+                                } else {
+                                    this.$message.error(res.data.message)
+                                }
+                                // 进行分页操作
+                                this.findPage();
+                            });
+                    });
                 }
             }
         })

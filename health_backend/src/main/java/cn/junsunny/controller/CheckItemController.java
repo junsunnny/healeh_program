@@ -21,15 +21,18 @@ public class CheckItemController {
     // 新增检查项
     @RequestMapping("/add")
     public Result add(@RequestBody CheckItem checkItem) {
-        try{
-            checkItemService.add(checkItem);
-        }catch (Exception e){
-            e.printStackTrace();
-            // 服务调用失败
-            return new Result(false, MessageConstant.ADD_CHECKITEM_FAIL);
-        }
-        return new Result(true, MessageConstant.ADD_CHECKITEM_SUCCESS);
+        Integer id = checkItem.getId();
+            try{
+                checkItemService.add(checkItem);
+            }catch (Exception e){
+                e.printStackTrace();
+                // 服务调用失败
+                return new Result(false, MessageConstant.ADD_CHECKITEM_FAIL);
+            }
+            return new Result(true, MessageConstant.ADD_CHECKITEM_SUCCESS);
+
     }
+
 
     // 检查项分页查新
     @RequestMapping("/findPage")
@@ -37,4 +40,44 @@ public class CheckItemController {
         PageResult pageResult = checkItemService.findPage(queryPageBean);
         return pageResult;
     }
+
+    // 删除检查项
+    @RequestMapping("/delCheckItem")
+    public Result delCheckItem(Integer id){
+        try {
+            checkItemService.delCheckItem(id);
+        }catch (Exception e) {
+            e.printStackTrace();
+            return new Result(false,MessageConstant.DELETE_CHECKGROUP_FAIL);
+        }
+        return new Result(true,MessageConstant.DELETE_CHECKGROUP_SUCCESS);
+
+    }
+
+    // 根据id查询检查项
+    @RequestMapping("/findCheckItem")
+    public Result findCheckItem(Integer id){
+        CheckItem checkItemRes = null;
+        try {
+            checkItemRes = checkItemService.findCheckItemById(id);
+        }catch (Exception e) {
+            e.printStackTrace();
+            return new Result(false,MessageConstant.QUERY_CHECKITEM_FAIL);
+        }
+
+        return new Result(true,MessageConstant.QUERY_CHECKITEM_SUCCESS,checkItemRes);
+    }
+
+    // 修改检查项数据
+    @RequestMapping("/edit")
+    public Result edit(@RequestBody CheckItem checkItem) {
+        try {
+            checkItemService.updateCheckItem(checkItem);
+        }catch (Exception e) {
+            e.printStackTrace();
+            return new Result(false,MessageConstant.EDIT_CHECKITEM_FAIL);
+        }
+        return new Result(true,MessageConstant.EDIT_CHECKITEM_SUCCESS);
+    }
+
 }

@@ -16,10 +16,56 @@
             )
     </insert>
 
+    <!--多条件查询-->
     <select id="findByCondition" parameterType="string" resultType="cn.junsunny.pojo.CheckItem">
         select * from t_checkitem
             <if test="value != null and value.length > 0">
-               where code = #{value} or name = #{value}
+               where code like concat('%' ,#{value} ,'%') or name like concat('%' ,#{value} ,'%')
             </if>
     </select>
+
+    <!--检查删除项-->
+    <delete id="delCheckItem" parameterType="int">
+        delete from t_checkitem where id = #{id} 
+    </delete>
+    
+    <!--根据id查询检查项信息-->
+    <select id="findCheckItemById" parameterType="int" resultType="cn.junsunny.pojo.CheckItem">
+        select * from t_checkitem where id = #{id}
+    </select>
+
+    <!--更新检查项表-->
+    <update id="updateCheckItem" parameterType="cn.junsunny.pojo.CheckItem">
+        update t_checkitem
+        <if test="id != null and id > 0">
+            <trim prefix="set" suffixOverrides=",">
+                <if test="code != null and code.length > 0">
+                    code = #{code},
+                </if>
+                <if test="name != null and name.length > 0">
+                    name = #{name},
+                </if>
+                <if test="sex != null and sex.length > 0">
+                    sex = #{sex},
+                </if>
+                <if test="age != null and age.length > 0">
+                    age = #{age},
+                </if>
+                <if test="price >= 0">
+                    price = #{price},
+                </if>
+                <if test="type != null and type.length > 0">
+                    type = #{type},
+                </if>
+                <if test="attention != null and attention.length > 0">
+                    attention = #{attention},
+                </if>
+                <if test="remark != null and remark.length > 0">
+                    remark = #{remark}
+                </if>
+            </trim>
+            where  id = #{id}
+        </if>
+    </update>
+
 </mapper>

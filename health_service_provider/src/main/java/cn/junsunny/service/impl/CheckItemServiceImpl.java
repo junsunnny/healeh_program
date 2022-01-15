@@ -36,8 +36,22 @@ public class CheckItemServiceImpl implements CheckItemService {
 
         // 设置查询结果的返回值
         PageResult pageResult = new PageResult(resPage.getTotal(), resPage.getResult());
-
         return pageResult;
+    }
+
+    @Override
+    public void delCheckItem(Integer id) {
+        checkItemDao.delCheckItem(id);
+    }
+
+    @Override
+    public CheckItem findCheckItemById(Integer id) {
+        return checkItemDao.findCheckItemById(id);
+    }
+
+    @Override
+    public void updateCheckItem(CheckItem checkItem) {
+        checkItemDao.updateCheckItem(checkItem);
     }
 
 }
