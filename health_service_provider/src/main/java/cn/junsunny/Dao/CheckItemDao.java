@@ -3,6 +3,8 @@ package cn.junsunny.Dao;
 import cn.junsunny.pojo.CheckItem;
 import com.github.pagehelper.Page;
 
+import java.util.List;
+
 public interface CheckItemDao {
     // 检查项新增方法
     public void add(CheckItem checkItem);
@@ -18,5 +20,8 @@ public interface CheckItemDao {
 
     // 修改检查项信息
     public void updateCheckItem (CheckItem checkItem);
+
+    // 查询所有检查项
+    public List<CheckItem> findAll();
 
 }

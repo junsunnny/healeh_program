@@ -262,8 +262,7 @@
                         if (valid) {
                             // console.log(this.formData);
                             // 表单校验通过 发送Ajax请求 将数据提交到后台进行处理
-                            axios.post("/checkitem/add.do",this.formData).then((res) => {
-
+                            axios.post("/checkitem/add.do", this.formData).then((res) => {
                                     // 执行成功
                                     if (res.data.flag) {
                                         // 新增成功后 重新调用分页方法 查出最新数据

@@ -15,10 +15,11 @@
                 #{remark}
             )
     </insert>
-
+    <sql id="selectAll">select * from t_checkitem</sql>
     <!--多条件查询-->
     <select id="findByCondition" parameterType="string" resultType="cn.junsunny.pojo.CheckItem">
-        select * from t_checkitem
+        <!--select * from t_checkitem-->
+        <include refid="selectAll"></include>
             <if test="value != null and value.length > 0">
                where code like concat('%' ,#{value} ,'%') or name like concat('%' ,#{value} ,'%')
             </if>
@@ -67,5 +68,7 @@
             where  id = #{id}
         </if>
     </update>
-
+    <select id="findAll" resultType="cn.junsunny.pojo.CheckItem">
+        <include refid="selectAll" />
+    </select>
 </mapper>

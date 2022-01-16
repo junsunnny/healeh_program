@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.junsunny.Dao.CheckGroupDao">
+    <!--添加检查组-->
+    <insert id="add"
+            parameterType="cn.junsunny.pojo.CheckGroup">
+        <selectKey resultType="java.lang.Integer" order="AFTER" keyProperty="id">
+            select LAST_INSERT_ID()
+        </selectKey>
+        INSERT INTO
+            t_checkgroup(code, name, helpCode, sex, remark,
+                attention)
+        value (
+            #{code},#{name},#{helpCode},#{sex},#{remark},
+            #{attention}
+        )
+    </insert>
+
+    <!--设置检查组和检查项之间的关联关系-->
+    <insert id="setCheckGroupAndCheckItem"
+            parameterType="java.util.Map">
+        insert into t_checkgroup_checkitem
+                (checkgroup_id, checkitem_id)
+            value (
+                #{checkGroupId},#{checkItemId}
+            );
+    </insert>
+    <!--查询所有字段信息-->
+    <sql id="selectAll">select * from t_checkgroup</sql>
+    <!--分页查询-->
+    <select id="findAll" parameterType="String"
+            resultType="cn.junsunny.pojo.CheckGroup">
+            <include refid="selectAll"/>
+            <if test="value != null and value.length > 0">
+                where
+                    code like concat('%', #{value} ,'%')
+                or
+                    name like concat('%', #{value} ,'%')
+                or
+                    helpCode like concat('%', #{value} ,'%')
+            </if>
+    </select>
+
+    <!--删除检查组表中的数据-->
+    <delete id="delete"
+            parameterType="java.lang.Integer">
+        delete from t_checkgroup where id = #{id}
+    </delete>
+
+    <!--删除检查组和检查项之间的关联关系-->
+    <delete id="deleteAssociation"
+            parameterType="java.lang.Integer">
+        delete from t_checkgroup_checkitem where checkgroup_id = #{id};
+    </delete>
+
+    <!--查询检查项根据id-->
+    <select id="finCheckGroup"
+            parameterType="java.lang.Integer"
+            resultType="cn.junsunny.pojo.CheckGroup">
+        <include refid="selectAll"/>
+        where id = #{id}
+    </select>
+
+    <!--查询检查项和检查组关联的所有检查项id根据检查组id-->
+    <select id="findCheckGroupAndCheckItem"
+            parameterType="java.lang.Integer"
+            resultType="java.lang.Integer">
+        select
+            checkitem_id
+        from
+            t_checkgroup_checkitem
+        where
+            checkgroup_id = #{id};
+    </select>
+
+    <update id="editCheckGroup"
+            parameterType="cn.junsunny.pojo.CheckGroup">
+        update
+            t_checkgroup
+        <trim prefix="set" suffixOverrides=",">
+            <if test="code != null and code.length > 0">
+                code = #{code},
+            </if>
+            <if test="name != null and name.length > 0">
+                name = #{name},
+            </if>
+            <if test="helpCode != null and helpCode.length > 0">
+                helpCode = #{helpCode},
+            </if>
+            <if test="sex != null and sex.length > 0">
+                sex = #{sex},
+            </if>
+            <if test="remark != null and remark.length > 0">
+                remark = #{remark},
+            </if>
+            <if test="attention != null and attention.length > 0">
+                attention = #{attention}
+            </if>
+        </trim>
+        <where>
+            <if test="id != null and id > 0">
+                id = #{id}
+            </if>
+        </where>
+    </update>
+
+</mapper>

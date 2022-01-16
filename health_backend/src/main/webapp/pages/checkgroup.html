@@ -55,7 +55,7 @@
                 <div class="box">
                     <div class="filter-container">
                         <el-input placeholder="编码/名称/助记码" v-model="pagination.queryString" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter"></el-input>
-                        <el-button @click="findPage()" class="dalfBut">查询</el-button>
+                        <el-button @click="_findPage()" class="dalfBut">查询</el-button>
                         <el-button type="primary" class="butT" @click="handleCreate()">新建</el-button>
                     </div>
                     <el-table size="small" current-row-key="id" :data="dataList" stripe highlight-current-row>
@@ -263,11 +263,11 @@
             el: '#app',
             data:{
                 activeName:'first',//添加/编辑窗口Tab标签名称
-                pagination: {//分页相关属性
+                pagination: { //分页相关属性
                     currentPage: 1,
                     pageSize:10,
                     total:100,
-                    queryString:null,
+                    queryString:null
                 },
                 dataList: [],//列表数据
                 formData: {},//表单数据
@@ -282,27 +282,162 @@
             methods: {
                 //编辑
                 handleEdit() {
+                    // console.log(this.formData, this.checkitemIds);
+                    // 发送Ajax请求 将数据添加到数据库中
+                    axios.post("/checkgroup/editCheckGroup.do?checkItemIds=" + this.checkitemIds, this.formData).then((res) => {
+                        // 对后台返回结果进行判断
+                        // 如果为真则进行提示数据添加成功 并对页面进行刷新和编辑窗口的关闭
+                        if (res.data.flag){
+                            this.$message({
+                                message: res.data.message,
+                                type: 'success'
+                            });
+                            // 关闭编辑窗口
+                            this.dialogFormVisible4Edit = false;
+                            // 页面刷新 保证数据的一致性
+                            this.findPage();
+                        // 否则弹出错误的提示信息
+                        }else {
+                            this.message.error(res.data.message);
+                        }
+                    });
                 },
                 //添加
                 handleAdd () {
+                    // alert();
+                    // 发送ajax请求 并将模型数据提交的后台处理
+                    console.log(this.formData);
+                    axios.post("/checkgroup/add.do?checkItemIds=" + this.checkitemIds, this.formData).then((res) => {
+                        // 关闭新增窗口
+                        this.dialogFormVisible = false;
+                        // 新增成功 弹出提示框
+                        if (res.data.flag) {
+                            this.$message({
+                                message: res.data.message,
+                                type: 'success'
+                            });
+                        // 新增失败 弹出提示框
+                        }else {
+                            this.$message.error(res.data.message);
+                        }
+
+                    }).finally(() => {
+                        // alert(this.formData);
+                        // 无论成功与否 进行分页查询
+                        this.findPage();
+                    });
                 },
                 //分页查询
                 findPage() {
+                    // 分页参数
+                    var param = {
+                        currentPage: this.pagination.currentPage,
+                        pageSize: this.pagination.pageSize,
+                        queryString: this.pagination.queryString
+                    }
+                    // 请求后台数据
+                    axios.post("/checkgroup/findPage.do", param).then((res) => {
+                        // 为模型数据绑定参数
+                        this.dataList = res.data.rows;
+                        this.pagination.total = res.data.total;
+                    });
                 },
                 // 重置表单
                 resetForm() {
+                    // 退出之后进行表单数据的重置
+                    this.formData = {};
                 },
                 // 弹出添加窗口
                 handleCreate() {
+                    // alert("mmmm");
+                    // 点击的时候进行表单数据的清空
+                    this.resetForm();
+                    // 点击之后进行新建窗口显示
+                    this.dialogFormVisible = true;
+                    // 默认切换到第一个标签(基础信息)
+                    this.activeName='first';
+                    // 重置
+                    this.checkitemIds = [];
+                    // 发送ajax请求查询所检查项信息
+                    axios.get('/checkitem/findAll.do').then((res) => {
+                        // 如果为真则进行数据的赋值
+                        if (res.data.flag){
+                            // 把查询的结果封装到遍历的数据模型中
+                            this.tableData = res.data.data;
+                        }else {
+                            this.$message.error(res.data.message);
+                        }
+                    });
                 },
                 // 弹出编辑窗口
                 handleUpdate(row) {
+                    // alert(row.id)
+                    // 发送Ajax请求用于回显数据信息 根据id进行查找
+                    axios.get("/checkgroup/findCheckGroup.do?id=" + row.id).then((res) => {
+                        if (res.data.flag){
+                            // 设置默认选中第一个标签页
+                            this.activeName = 'first';
+                            // 为模型数据绑定赋值 通过vue双向绑定进行信息的回显
+                            this.formData = res.data.data;
+                            // alert(res.date.data);
+                            // 发送ajax请求用于回显所有的检查项信息 用于表格数据展示
+                            axios.get("/checkitem/findAll.do").then((res) => {
+                                if (res.data.flag) {
+                                    // 为模型数据赋值
+                                    this.tableData = res.data.data;
+                                    // 发送ajax请求 查询当前数据组中所包含的检查项的id 用于页面的回显
+                                    axios.get("/checkgroup/findCheckGroupAndCheckItem.do?id=" + row.id).then((res) => {
+                                        if (res.data.flag){
+                                            // 为模型数据进行赋值处理
+                                            this.checkitemIds = res.data.data;
+                                            // 打开检查组编辑信息框
+                                            this.dialogFormVisible4Edit = true;
+                                        }else{
+                                            this.$message.error(res.data.message);
+                                        }
+                                    });
+                                }else {
+                                    this.$message.error(res.data.message);
+                                }
+                            });
+                        }else {
+                            this.$message.error("获取数据失败，请刷新当前页面");
+                        }
+                    });
+
+                },
+                _findPage() {
+                    this.pagination.currentPage = 1;
+                    this.findPage();
                 },
                 //切换页码
                 handleCurrentChange(currentPage) {
+                    // 设置页码的当前页
+                    this.pagination.currentPage = currentPage;
+                    // 然后进行分页处理
+                    this.findPage();
                 },
                 // 删除
                 handleDelete(row) {
+                    // alert(row.id);
+                    // console.log(row.id)
+                    // 提示用户是否要进行删除 如果点击确定则进行删除数据
+                    this.$confirm("此操作可能造成数据的丢失，你确定要继续吗?", "删除提示", {type: "warning"}).then(()=>{
+                        // 点击确认 发送ajax请求来进行数据的删除
+                        axios.get("/checkgroup/del.do?id=" + row.id).then((res) => {
+                            if (res.data.flag){
+                                this.$message({
+                                    message: res.data.message,
+                                    type: 'success'
+                                });
+                            }else {
+                                this.$message.error(res.data.message);
+                            }
+                            // 无论成功与否都要进行数据的刷新 使用分页查询
+                            this.findPage()
+                        });
+                    });
+
                 }
             }
         })

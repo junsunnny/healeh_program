@@ -4,6 +4,8 @@ import cn.junsunny.entity.PageResult;
 import cn.junsunny.entity.QueryPageBean;
 import cn.junsunny.pojo.CheckItem;
 
+import java.util.List;
+
 /**
  * 检查项管理
  */
@@ -22,4 +24,7 @@ public interface CheckItemService {
 
     // 修改检查项信息
     public void updateCheckItem (CheckItem checkItem);
+
+    // 查询所有检查项信息
+    public List<CheckItem> findAll();
 }
