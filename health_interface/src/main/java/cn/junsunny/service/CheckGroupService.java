@@ -25,5 +25,9 @@ public interface CheckGroupService {
     // 查询检查项和检查组关联的所有检查项id根据检查组id
     public List<Integer> findCheckGroupAndCheckItem(Integer id);
 
+    // 修改检查组数据
     public void editCheckGroup(CheckGroup checkGroup, Integer[] checkItemIds);
+
+    // 查询检查组的所有信息
+    public List<CheckGroup> findAllCheckGroup();
 }

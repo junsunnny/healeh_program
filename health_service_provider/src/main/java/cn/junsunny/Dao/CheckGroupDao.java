@@ -33,4 +33,7 @@ public interface CheckGroupDao {
 
     // 更新检查组内数据
     public void editCheckGroup(CheckGroup checkGroup);
+
+    // 查询检查组内所有信息数据
+    public List<CheckGroup> findAllCheckGroup();
 }

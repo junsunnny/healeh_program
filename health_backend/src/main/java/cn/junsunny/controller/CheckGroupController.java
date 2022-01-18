@@ -99,5 +99,16 @@ public class CheckGroupController {
 
     }
 
+    // 查询检查组所有的信息
+    @RequestMapping("/findAllCheckGroup")
+    public Result findAllCheckGroup() {
+        try{
+            List<CheckGroup> checkGroups = checkGroupService.findAllCheckGroup();
+            return new Result(true, MessageConstant.QUERY_CHECKGROUP_SUCCESS, checkGroups);
+        }catch (Exception e) {
+            e.printStackTrace();
+            return new Result(false, MessageConstant.QUERY_CHECKGROUP_FAIL);
+        }
 
+    }
 }

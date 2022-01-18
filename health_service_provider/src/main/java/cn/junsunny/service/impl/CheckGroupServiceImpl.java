@@ -86,5 +86,11 @@ public class CheckGroupServiceImpl implements CheckGroupService {
         setCheckGroupAndCheckItem(checkGroup.getId(),checkItemIds);
     }
 
+    // 查询检查组内所有的数据信息
+    @Override
+    public List<CheckGroup> findAllCheckGroup() {
+        return checkGroupDao.findAllCheckGroup();
+    }
+
 
 }

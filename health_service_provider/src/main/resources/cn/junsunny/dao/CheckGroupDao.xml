@@ -104,5 +104,9 @@
             </if>
         </where>
     </update>
-
+    
+    <!--查询所有检查组信息-->
+    <select id="findAllCheckGroup" resultType="cn.junsunny.pojo.CheckGroup">
+        <include refid="selectAll"></include>
+    </select>
 </mapper>

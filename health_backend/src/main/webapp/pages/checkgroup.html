@@ -430,11 +430,12 @@
                                     message: res.data.message,
                                     type: 'success'
                                 });
+
                             }else {
                                 this.$message.error(res.data.message);
                             }
                             // 无论成功与否都要进行数据的刷新 使用分页查询
-                            this.findPage()
+                            this.findPage();
                         });
                     });
 
