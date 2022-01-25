@@ -5,6 +5,7 @@ import cn.junsunny.constant.RedisConstant;
 import cn.junsunny.entity.PageResult;
 import cn.junsunny.entity.QueryPageBean;
 import cn.junsunny.entity.Result;
+import cn.junsunny.pojo.CheckGroup;
 import cn.junsunny.pojo.Setmeal;
 import cn.junsunny.service.SetmealService;
 import cn.junsunny.utils.QiniuUtils;
@@ -80,5 +81,57 @@ public class SetmealController {
                 queryPageBean.getPageSize(),
                 queryPageBean.getQueryString());
         return pageResult;
+    }
+
+    // 删除查询套餐项
+    @RequestMapping("/deleteSetmeal")
+    public Result deleteSetmeal(Integer id,String img){
+        try{
+            // 编写服务类的方法
+            setmealService.deleteSetmeal(id,img);
+        }catch (Exception e){
+            e.printStackTrace();
+            return new Result(false,MessageConstant.DELETE_SETMEAL_FAIL);
+        }
+        return new Result(true,MessageConstant.DELETE_SETMEAL_SUCCESS);
+    }
+
+    // 查询套餐管理信息
+    @RequestMapping("/findSetMealById")
+    public Result findSetMealById(Integer id){
+        try{
+            // 编写服务类的方法
+            Setmeal setmealById =  setmealService.findSetMealById(id);
+            return new Result(true,MessageConstant.QUERY_SETMEAL_SUCCESS,setmealById);
+        }catch (Exception e){
+            e.printStackTrace();
+            return new Result(false,MessageConstant.QUERY_SETMEAL_FAIL);
+        }
+    }
+
+    // 根据检查套餐id 获取检查组信息
+    @RequestMapping("/findSetMealAndCheckGroupBySetMealId")
+    public Result findSetMealAndCheckGroupBySetMealId(Integer id){
+        try{
+            // 编写服务类的方法
+            List<Integer> checkGroupIds = setmealService.findSetMealAndCheckGroupBySetMealId(id);
+            return new Result(true,MessageConstant.QUERY_SETMEAL_SUCCESS,checkGroupIds);
+        }catch (Exception e){
+            e.printStackTrace();
+            return new Result(false,MessageConstant.QUERY_SETMEAL_FAIL);
+        }
+    }
+
+    // 编辑检查套餐
+    @RequestMapping("/editSetMeal")
+    public Result editSetMeal(@RequestBody Setmeal setmeal, Integer[] checkGroupIds){
+        try{
+            // 编写服务类的方法
+            setmealService.editSetMeal(setmeal,checkGroupIds);
+        }catch (Exception e){
+            e.printStackTrace();
+            return new Result(false,MessageConstant.EDIT_SETMEAL_FAIL);
+        }
+        return new Result(true,MessageConstant.EDIT_SETMEAL_SUCCESS);
     }
 }

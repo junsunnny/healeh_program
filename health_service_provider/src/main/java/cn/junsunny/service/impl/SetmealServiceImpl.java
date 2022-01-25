@@ -4,6 +4,7 @@ import cn.junsunny.Dao.SetmealDao;
 import cn.junsunny.constant.RedisConstant;
 import cn.junsunny.entity.PageResult;
 import cn.junsunny.entity.QueryPageBean;
+import cn.junsunny.pojo.CheckGroup;
 import cn.junsunny.pojo.Setmeal;
 import cn.junsunny.service.SetmealService;
 import com.alibaba.dubbo.config.annotation.Service;
@@ -43,19 +44,6 @@ public class SetmealServiceImpl implements SetmealService {
         savePicRedis(setmeal.getImg());
     }
 
-    // 分页查询套餐项
-    @Override
-    public PageResult findPageSetmeal(Integer currentPage, Integer pageSize, String queryString) {
-        PageHelper.startPage(currentPage,pageSize);
-        Page<Setmeal> pageMessage = setmealDao.selectByCondition(queryString);
-        return new PageResult(pageMessage.getTotal(),pageMessage.getResult());
-    }
-
-    // 将图片名称保存到Redis中
-    private void savePicRedis(String picName) {
-        jedisPool.getResource().sadd(RedisConstant.SETMEAL_PIC_DB_RESOURCES,picName);
-    }
-
     // 设置套餐管理和检查组之间的关联关系
     private void setSetmealAndCheckGroup(Integer setmealId, Integer[] checkGroupIds) {
         // 1.定义一个Map集合用来传递参数数据因为Mybatis使用多参数传递时
@@ -72,5 +60,68 @@ public class SetmealServiceImpl implements SetmealService {
 
     }
 
-    //
+    // 将图片名称保存到Redis中
+    private void savePicRedis(String picName) {
+        jedisPool.getResource().sadd(RedisConstant.SETMEAL_PIC_DB_RESOURCES,picName);
+    }
+
+    // 分页查询套餐项
+    @Override
+    public PageResult findPageSetmeal(Integer currentPage, Integer pageSize, String queryString) {
+        PageHelper.startPage(currentPage,pageSize);
+        Page<Setmeal> pageMessage = setmealDao.selectByCondition(queryString);
+        return new PageResult(pageMessage.getTotal(),pageMessage.getResult());
+    }
+
+    // 删除检查套餐对应的数据
+    @Override
+    public void deleteSetmeal(Integer id, String img) {
+        // 删除数据库信息
+        setmealDao.deleteSetmeal(id);
+        // 删除缓存中的数据信息
+        deleteSetMealRidis(img);
+        // 删除检查组和检查套餐之间的关系
+        deleteSetMealAndCheckGroup(id);
+    }
+
+    // 删除redis缓存
+    private void deleteSetMealRidis(String img) {
+        // 使用redis连接池技术进行数据的删除
+        jedisPool.getResource().srem(RedisConstant.SETMEAL_PIC_DB_RESOURCES,img);
+    }
+
+    // 删除检查组和套餐之间的关系
+    private void deleteSetMealAndCheckGroup(Integer id) {
+        setmealDao.deleteSetMealAndCheckGroup(id);
+    }
+
+    // 查询检查套餐信息根据id
+    @Override
+    public Setmeal findSetMealById(Integer id) {
+        return setmealDao.findSetMealById(id);
+    }
+
+    // 根据检查套餐id 获取检查组信息
+    @Override
+    public List<Integer> findSetMealAndCheckGroupBySetMealId(Integer id) {
+        return setmealDao.findSetMealAndCheckGroupBySetMealId(id);
+    }
+
+    // 编辑检查组信息
+    @Override
+    public void editSetMeal(Setmeal setmeal, Integer[] checkGroupIds) {
+        // 1.请求Dao层数据
+        setmealDao.editSetMeal(setmeal);
+        String newImgName = setmeal.getImg();
+        // 2.清除Redis缓存数据
+        deleteSetMealRidis(newImgName);
+        // 3.将编辑的数据放到缓存中
+        savePicRedis(newImgName);
+        // 4.清除检查组和检查套餐之间的关系
+        deleteSetMealAndCheckGroup(setmeal.getId());
+        // 5.设置检查组和检查项之间的关系
+        setSetmealAndCheckGroup(setmeal.getId(),checkGroupIds);
+    }
+
+
 }

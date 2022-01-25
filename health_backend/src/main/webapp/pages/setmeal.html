@@ -224,7 +224,7 @@
                     </div>
                     <!-- 编辑标签弹层 -->
                     <div class="add-form">
-                        <el-dialog title="编辑检查项" :visible.sync="dialogFormVisible4Edit">
+                        <el-dialog title="编辑套餐管理" :visible.sync="dialogFormVisible4Edit">
                             <template>
                                 <el-tabs v-model="activeName" type="card">
                                     <el-tab-pane label="基本信息" name="first">
@@ -274,7 +274,7 @@
                                                     <el-form-item label="上传图片">
                                                         <el-upload
                                                                 class="avatar-uploader"
-                                                                action="/setmeal/uploadImage.do"
+                                                                action="/setmeal/uploadImage.do?"
                                                                 :auto-upload="autoUpload"
                                                                 name="imgFile"
                                                                 :show-file-list="false"
@@ -355,7 +355,7 @@
                 dataList: [],//列表数据
                 formData: {},//表单数据
                 tableData:[],//添加表单窗口中检查组列表数据
-                checkgroupIds:[],//添加表单窗口中检查组复选框对应id
+                checkGroupIds:[],//添加表单窗口中检查组复选框对应id
                 dialogFormVisible: false,//控制添加窗口显示/隐藏
                 dialogFormVisible4Edit:false,//编辑表单是否可见
 
@@ -390,7 +390,23 @@
 				  return isJPG && isLt2M;
                 },
                 //编辑
-                handleEdit(){},
+                handleEdit(){
+                    // 提交ajax请求
+                    // console.log(this.checkgroupIds);
+                    axios.post("/setmeal/editSetMeal.do?checkGroupIds=" + this.checkgroupIds, this.formData).then((res) => {
+                        let flag = res.data.flag;
+                        let remindMessage = res.data.message;
+                        if (flag) {
+                            this.$message.success(remindMessage);
+                            // 关闭编辑窗口
+                            this.dialogFormVisible4Edit = false;
+                            // 进行页面刷新
+                            this.findPage();
+                        }else {
+                            this.$message.error(remindMessage);
+                        }
+                    });
+                },
                 //添加
                 handleAdd () {
                     // 发送Ajax请求进行数据传递
@@ -463,6 +479,7 @@
                         // 进行数据判断如果返回的数据为真 将返回的数据的检查组的信息进行赋值
                         if (res.data.flag) {
                             this.tableData = res.data.data;
+
                             // 如果为假 则返回数据信息
                         }else {
                             this.$message.error(res.data.message);
@@ -479,11 +496,67 @@
                 },
                 // 弹出编辑窗口
                 handleUpdate(row) {
+                    // 设置编辑弹出窗口
                     this.dialogFormVisible4Edit = true;
+                    // 1.发送异步请求返回检查套餐数据
+                    axios.get("/setmeal/findSetMealById.do?id=" + row.id).then((res) => {
+                        let flag = res.data.flag;
+                        let remindMessage = res.data.message;
+                        if (flag){
+                            // 如果为真进行数据赋值 并发送二次请求 根据查询检查组信息
+                            this.formData = res.data.data;
+                            axios.get("/checkgroup/findAllCheckGroup.do").then((res) => {
+                                flag = res.data.flag;
+                                remindMessage = res.data.message;
+                                // 如果为真进行数据赋值 并发送二次请求 根据查询检查组信息
+                                if (flag) {
+                                    this.tableData = res.data.data;
+                                    axios.get("/setmeal/findSetMealAndCheckGroupBySetMealId.do?id=" + row.id).then((res) => {
+                                        flag = res.data.flag;
+                                        remindMessage = res.data.message;
+                                        if (flag){
+                                            this.checkgroupIds = res.data.data;
+                                        }else {
+                                            this.$message.error(remindMessage);
+                                            this.dialogFormVisible4Edit = false;
+                                        }
+                                    });
+                                // 如果为假进行提示信息 并关闭编辑窗口
+                                }else {
+                                    this.$message.error(remindMessage);
+                                    this.dialogFormVisible4Edit = false;
+                                }
+                            });
+                        // 如果为假进行提示信息 并关闭编辑窗口
+                        }else {
+                            this.$message.error("获取信息失败 请稍后再试！！！");
+                            this.dialogFormVisible4Edit = false;
+                        }
+                    });
                 },
                 // 删除
                 handleDelete(row) {
-
+                    console.log(row);
+                    // 提示用户是否要进行数据的删除操作 如果点击确认按钮 则进行删除操作
+                    this.$confirm('你确定要删除当前数据吗？','删除提示',{type: "warning"}).then(() => {
+                        // 点击确认按钮之后的操作
+                        // 1.发送ajax请求进行数据删除操作
+                        console.log(row)
+                        // 封装请求参数
+                        axios.get("/setmeal/deleteSetmeal.do?id=" + row.id + "&img=" + row.img).then((res) => {
+                            // 定义一个数据常量进行数据的接受请求数据是否成功
+                            let flag = res.data.flag;
+                            // 定义一个数据用来接受提示信息
+                            let remindMessage = res.data.message;
+                            if (flag){
+                                this.$message.success(remindMessage);
+                                // 删除成功后进行页面的刷新操作
+                                this.findPage();
+                            }else {
+                                this.$message.error(remindMessage);
+                            }
+                        });
+                    });
                 }
             }
         })
